@@ -2,7 +2,7 @@ name: e2e
 
 on:
   pull_request:
-    branches: [ 'main', 'release-*' ]
+    branches: [ 'main', 'release-*', 'e2e-with-guard' ]
 
 defaults:
   run:
