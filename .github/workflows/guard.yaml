@@ -311,7 +311,12 @@ jobs:
         echo "GATEWAY_NAMESPACE_OVERRIDE=$GATEWAY_NAMESPACE_OVERRIDE" >> $GITHUB_ENV
         echo "CA_CERT=$CA_CERT" >> $GITHUB_ENV
         echo "SERVER_NAME=$SERVER_NAME" >> $GITHUB_ENV
-
+    
+    - name: Setup ko
+      uses: imjasonh/setup-ko@v0.6
+      with:
+        version: latest-release
+    
     - name: Add Guard
       run: |
         cd  $GITHUB_WORKSPACE/guard
