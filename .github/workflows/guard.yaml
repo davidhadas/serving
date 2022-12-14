@@ -320,7 +320,10 @@ jobs:
     - name: Add Guard
       run: |
         cd  $GITHUB_WORKSPACE/guard
-        ko apply -Rf ./config
+        ko apply -f ./config/deploy/config-features.yaml
+        ko apply -f ./config/deploy/queue-proxy.yaml
+        ko apply -f ./config/resources/gateAccount.yaml
+        ko apply -f ./config/resources/guardiansCrd.yaml
         cd ~
 
     - name: Test ${{ matrix.test-suite }}
