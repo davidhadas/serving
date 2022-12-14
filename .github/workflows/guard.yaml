@@ -187,11 +187,6 @@ jobs:
         name: artifacts
         path: ~/artifacts
 
-    - name: Check out current Guard repository code
-      uses: actions/checkout@v3
-      with:
-        path: guard
-  
     - name: Configure KinD Cluster
       run: |
         set -x
@@ -317,10 +312,16 @@ jobs:
       with:
         version: latest-release
     
+    - name: Check out current Guard repository code
+      uses: actions/checkout@v3
+      with:
+        path: guard
+  
     - name: Add Guard
       run: |
         cd  $GITHUB_WORKSPACE/guard
         ko apply -Rf ./config
+        cd ~
 
     - name: Test ${{ matrix.test-suite }}
       run: |
