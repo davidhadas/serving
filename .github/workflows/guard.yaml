@@ -66,7 +66,7 @@ jobs:
       run: |
         export YAML_OUTPUT_DIR=$HOME/artifacts/build
         ./hack/generate-yamls.sh "$GITHUB_WORKSPACE" "$(mktemp)" $YAML_OUTPUT_DIR/env
-
+         
     - name: Build Test Images
       run: |
         ./test/upload-test-images.sh
@@ -85,20 +85,14 @@ jobs:
       fail-fast: false # Keep running if one leg fails.
       matrix:
         k8s-version:
-        - v1.24.7
         - v1.25.3
 
         ingress:
         - kourier
-        - kourier-tls
-        - istio
-        - contour
         # Disabled due to consistent failures
         # - gateway_istio
 
         test-suite:
-        - runtime
-        - api
         - e2e
 
         include:
@@ -193,6 +187,11 @@ jobs:
         name: artifacts
         path: ~/artifacts
 
+    - name: Check out current Guard repository code
+      uses: actions/checkout@v3
+      with:
+        path: guard
+  
     - name: Configure KinD Cluster
       run: |
         set -x
@@ -312,6 +311,11 @@ jobs:
         echo "GATEWAY_NAMESPACE_OVERRIDE=$GATEWAY_NAMESPACE_OVERRIDE" >> $GITHUB_ENV
         echo "CA_CERT=$CA_CERT" >> $GITHUB_ENV
         echo "SERVER_NAME=$SERVER_NAME" >> $GITHUB_ENV
+
+    - name: Add Guard
+      run: |
+        cd  $GITHUB_WORKSPACE/guard
+        ko apply -Rf ./config
 
     - name: Test ${{ matrix.test-suite }}
       run: |
