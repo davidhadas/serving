@@ -259,7 +259,7 @@ func TestControllerConfiguration(t *testing.T) {
 			"queueSidecarMemoryLimit":             "8M",
 			"queueSidecarEphemeralStorageRequest": "9M",
 			"queueSidecarEphemeralStorageLimit":   "10M",
-			"queueSidecarTokens":                  "bar",
+			"queueSidecarTokenAudiences":          "bar",
 			"concurrencyStateEndpoint":            "11",
 
 			QueueSidecarImageKey:                   "12",
