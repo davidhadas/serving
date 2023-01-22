@@ -455,6 +455,8 @@ github.com/sirupsen/logrus
 # github.com/spf13/pflag v1.0.5
 ## explicit; go 1.12
 github.com/spf13/pflag
+# github.com/stretchr/testify v1.8.1
+## explicit; go 1.13
 # github.com/tsenart/go-tsz v0.0.0-20180814235614-0bd30b3df1c3
 ## explicit
 github.com/tsenart/go-tsz
