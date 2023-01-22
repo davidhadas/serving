@@ -1589,13 +1589,13 @@ func TestMakeDeployment(t *testing.T) {
 				t.Fatal("Got unexpected error:", err)
 			}
 
-			wantJson, err := json.Marshal(test.want)
+			wantJSON, err := json.Marshal(test.want)
 			if err != nil {
 				t.Fatal("Got unexpected error when marshling what we want:", err)
 			}
 
 			want := &appsv1.Deployment{}
-			err = json.Unmarshal(wantJson, want)
+			err = json.Unmarshal(wantJSON, want)
 			if err != nil {
 				t.Fatal("Got unexpected error when unmarshling what we want:", err)
 			}
