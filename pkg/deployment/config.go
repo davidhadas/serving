@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"time"
 
+	jsonpatch "github.com/evanphx/json-patch"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -71,6 +72,9 @@ const (
 
 	// concurrencyStateEndpointKey is the key to configure the endpoint Queue Proxy will call when traffic drops to / increases from zero.
 	concurrencyStateEndpointKey = "concurrency-state-endpoint"
+
+	// overlay
+	overlayKey = "overlay"
 )
 
 var (
@@ -95,6 +99,22 @@ func defaultConfig() *Config {
 	}
 
 	return cfg
+}
+
+// *** Is being moved to  "knative.dev/pkg/configmap" - await merge ***
+// AsJsonPatch parses the value at key as a types.NamespacedName into the target, if it exists
+// The namespace and name are both required and expected to be valid DNS labels
+func AsJsonPatch(key string, target *jsonpatch.Patch) cm.ParseFunc {
+	return func(data map[string]string) error {
+		if raw, ok := data[key]; ok {
+			patch, err := jsonpatch.DecodePatch([]byte(raw))
+			if err != nil {
+				return fmt.Errorf("failed to parse as json-patch %q: %w", key, err)
+			}
+			*target = patch
+		}
+		return nil
+	}
 }
 
 // NewConfigFromMap creates a DeploymentConfig from the supplied Map.
@@ -131,6 +151,8 @@ func NewConfigFromMap(configMap map[string]string) (*Config, error) {
 		cm.AsString(queueSidecarRooCAKey, &nc.QueueSidecarRootCA),
 
 		cm.AsString(concurrencyStateEndpointKey, &nc.ConcurrencyStateEndpoint),
+
+		AsJsonPatch(overlayKey, &nc.Overlay),
 	); err != nil {
 		return nil, err
 	}
@@ -204,4 +226,7 @@ type Config struct {
 
 	// ConcurrencyStateEndpoint is the endpoint Queue Proxy will call when traffic drops to / increases from zero.
 	ConcurrencyStateEndpoint string
+
+	// Overlay is an array of RFC 6902 compliant Json-Patch strings
+	Overlay jsonpatch.Patch
 }

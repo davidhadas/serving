@@ -367,7 +367,7 @@ func MakeDeployment(rev *v1.Revision, cfg *config.Config) (*appsv1.Deployment, e
 
 	// Slowly but steadily roll the deployment out, to have the least possible impact.
 	maxUnavailable := intstr.FromInt(0)
-	return &appsv1.Deployment{
+	deployment := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:            names.Deployment(rev),
 			Namespace:       rev.Namespace,
@@ -393,5 +393,11 @@ func MakeDeployment(rev *v1.Revision, cfg *config.Config) (*appsv1.Deployment, e
 				Spec: *podSpec,
 			},
 		},
-	}, nil
+	}
+
+	deploymentWithOverlay, err := overlayDeployment(deployment, cfg.Deployment.Overlay)
+	if err != nil {
+		return nil, fmt.Errorf("failed to overlay deployment: %w", err)
+	}
+	return deploymentWithOverlay, nil
 }
