@@ -17,6 +17,7 @@ limitations under the License.
 package resources
 
 import (
+	"encoding/json"
 	"fmt"
 	"testing"
 	"time"
@@ -1587,7 +1588,19 @@ func TestMakeDeployment(t *testing.T) {
 			if err != nil {
 				t.Fatal("Got unexpected error:", err)
 			}
-			if diff := cmp.Diff(test.want, got, quantityComparer); diff != "" {
+
+			wantJson, err := json.Marshal(test.want)
+			if err != nil {
+				t.Fatal("Got unexpected error when marshling what we want:", err)
+			}
+
+			want := &appsv1.Deployment{}
+			err = json.Unmarshal(wantJson, want)
+			if err != nil {
+				t.Fatal("Got unexpected error when unmarshling what we want:", err)
+			}
+
+			if diff := cmp.Diff(want, got, quantityComparer); diff != "" {
 				t.Errorf("MakeDeployment (-want, +got) =\n%s", diff)
 			}
 		})
