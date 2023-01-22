@@ -102,9 +102,9 @@ func defaultConfig() *Config {
 }
 
 // *** Is being moved to  "knative.dev/pkg/configmap" - await merge ***
-// AsJsonPatch parses the value at key as a types.NamespacedName into the target, if it exists
+// AsJSONPatch parses the value at key as a types.NamespacedName into the target, if it exists
 // The namespace and name are both required and expected to be valid DNS labels
-func AsJsonPatch(key string, target *jsonpatch.Patch) cm.ParseFunc {
+func AsJSONPatch(key string, target *jsonpatch.Patch) cm.ParseFunc {
 	return func(data map[string]string) error {
 		if raw, ok := data[key]; ok {
 			patch, err := jsonpatch.DecodePatch([]byte(raw))
@@ -152,7 +152,7 @@ func NewConfigFromMap(configMap map[string]string) (*Config, error) {
 
 		cm.AsString(concurrencyStateEndpointKey, &nc.ConcurrencyStateEndpoint),
 
-		AsJsonPatch(overlayKey, &nc.Overlay),
+		AsJSONPatch(overlayKey, &nc.Overlay),
 	); err != nil {
 		return nil, err
 	}
