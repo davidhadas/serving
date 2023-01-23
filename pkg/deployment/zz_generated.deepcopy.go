@@ -24,7 +24,7 @@ package deployment
 import (
 	json "encoding/json"
 
-	jsonpatch "github.com/evanphx/json-patch"
+	v5 "github.com/evanphx/json-patch/v5"
 	sets "k8s.io/apimachinery/pkg/util/sets"
 )
 
@@ -77,11 +77,11 @@ func (in *Config) DeepCopyInto(out *Config) {
 	}
 	if in.Overlay != nil {
 		in, out := &in.Overlay, &out.Overlay
-		*out = make(jsonpatch.Patch, len(*in))
+		*out = make(v5.Patch, len(*in))
 		for i := range *in {
 			if (*in)[i] != nil {
 				in, out := &(*in)[i], &(*out)[i]
-				*out = make(jsonpatch.Operation, len(*in))
+				*out = make(v5.Operation, len(*in))
 				for key, val := range *in {
 					var outVal *json.RawMessage
 					if val == nil {

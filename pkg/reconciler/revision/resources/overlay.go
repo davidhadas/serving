@@ -20,22 +20,31 @@ import (
 	"encoding/json"
 	"fmt"
 
-	jsonpatch "github.com/evanphx/json-patch"
+	jsonpatch "github.com/evanphx/json-patch/v5"
 	appsv1 "k8s.io/api/apps/v1"
 )
 
+var jsonpatchOptions *jsonpatch.ApplyOptions = &jsonpatch.ApplyOptions{
+	SupportNegativeIndices:   true,
+	AccumulatedCopySizeLimit: 0,
+	AllowMissingPathOnRemove: false,
+	EnsurePathExistsOnAdd:    true,
+}
+
 func overlayDeployment(deployment *appsv1.Deployment, patch jsonpatch.Patch) (*appsv1.Deployment, error) {
+
 	original, err := json.Marshal(deployment)
 	if err != nil {
 		return nil, fmt.Errorf("marshaling deployment: %w", err)
 	}
 
-	modified, err := patch.Apply(original)
+	modified, err := patch.ApplyWithOptions(original, jsonpatchOptions)
 	if err != nil {
 		return nil, fmt.Errorf("applying patch to deployment: %w", err)
 	}
 
 	newDeployment := &appsv1.Deployment{}
+
 	err = json.Unmarshal(modified, newDeployment)
 	if err != nil {
 		return nil, fmt.Errorf("unmarshaling patched deployment: %w", err)
