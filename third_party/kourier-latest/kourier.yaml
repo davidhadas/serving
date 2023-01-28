@@ -20,7 +20,7 @@ metadata:
     networking.knative.dev/ingress-provider: kourier
     app.kubernetes.io/name: knative-serving
     app.kubernetes.io/component: net-kourier
-    app.kubernetes.io/version: "20230120-d52387a2"
+    app.kubernetes.io/version: "20230125-f5b81275"
 
 ---
 # Copyright 2020 The Knative Authors
@@ -45,7 +45,7 @@ metadata:
   labels:
     networking.knative.dev/ingress-provider: kourier
     app.kubernetes.io/component: net-kourier
-    app.kubernetes.io/version: "20230120-d52387a2"
+    app.kubernetes.io/version: "20230125-f5b81275"
     app.kubernetes.io/name: knative-serving
 data:
   envoy-bootstrap.yaml: |
@@ -168,7 +168,7 @@ metadata:
   labels:
     networking.knative.dev/ingress-provider: kourier
     app.kubernetes.io/component: net-kourier
-    app.kubernetes.io/version: "20230120-d52387a2"
+    app.kubernetes.io/version: "20230125-f5b81275"
     app.kubernetes.io/name: knative-serving
 data:
   _example: |
@@ -228,6 +228,11 @@ data:
     # NOTE THAT THIS IS AN EXPERIMENTAL / ALPHA FEATURE.
     enable-cryptomb: "false"
 
+
+    # Configures the number of additional ingress proxy hops from the
+    # right side of the x-forwarded-for HTTP header to trust.
+    trusted-hops-count: "0"
+
 ---
 # Copyright 2020 The Knative Authors
 #
@@ -251,7 +256,7 @@ metadata:
   labels:
     networking.knative.dev/ingress-provider: kourier
     app.kubernetes.io/component: net-kourier
-    app.kubernetes.io/version: "20230120-d52387a2"
+    app.kubernetes.io/version: "20230125-f5b81275"
     app.kubernetes.io/name: knative-serving
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -261,7 +266,7 @@ metadata:
   labels:
     networking.knative.dev/ingress-provider: kourier
     app.kubernetes.io/component: net-kourier
-    app.kubernetes.io/version: "20230120-d52387a2"
+    app.kubernetes.io/version: "20230125-f5b81275"
     app.kubernetes.io/name: knative-serving
 rules:
   - apiGroups: [""]
@@ -293,7 +298,7 @@ metadata:
   labels:
     networking.knative.dev/ingress-provider: kourier
     app.kubernetes.io/component: net-kourier
-    app.kubernetes.io/version: "20230120-d52387a2"
+    app.kubernetes.io/version: "20230125-f5b81275"
     app.kubernetes.io/name: knative-serving
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -327,7 +332,7 @@ metadata:
   labels:
     networking.knative.dev/ingress-provider: kourier
     app.kubernetes.io/component: net-kourier
-    app.kubernetes.io/version: "20230120-d52387a2"
+    app.kubernetes.io/version: "20230125-f5b81275"
     app.kubernetes.io/name: knative-serving
 spec:
   strategy:
@@ -341,11 +346,15 @@ spec:
       app: net-kourier-controller
   template:
     metadata:
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+        prometheus.io/path: "/metrics"
       labels:
         app: net-kourier-controller
     spec:
       containers:
-        - image: gcr.io/knative-nightly/knative.dev/net-kourier/cmd/kourier@sha256:b505ede1893729933b6343563a77d2661c826bd9b014ee8ffff5b5a8d4fcc6f8
+        - image: gcr.io/knative-nightly/knative.dev/net-kourier/cmd/kourier@sha256:8c3a9e165d6b30fc5c4fcafa00d71b8c2558e2d60eda0a0bba9ab5ff6d4f4960
           name: controller
           env:
             - name: CERTS_SECRET_NAMESPACE
@@ -378,6 +387,13 @@ spec:
                 - ALL
             seccompProfile:
               type: RuntimeDefault
+          resources:
+            requests:
+              cpu: 200m
+              memory: 200Mi
+            limits:
+              cpu: 500m
+              memory: 500Mi
       restartPolicy: Always
       serviceAccountName: net-kourier
 ---
@@ -389,7 +405,7 @@ metadata:
   labels:
     networking.knative.dev/ingress-provider: kourier
     app.kubernetes.io/component: net-kourier
-    app.kubernetes.io/version: "20230120-d52387a2"
+    app.kubernetes.io/version: "20230125-f5b81275"
     app.kubernetes.io/name: knative-serving
 spec:
   ports:
@@ -424,7 +440,7 @@ metadata:
   labels:
     networking.knative.dev/ingress-provider: kourier
     app.kubernetes.io/component: net-kourier
-    app.kubernetes.io/version: "20230120-d52387a2"
+    app.kubernetes.io/version: "20230125-f5b81275"
     app.kubernetes.io/name: knative-serving
 spec:
   strategy:
@@ -443,6 +459,9 @@ spec:
         # v0.26 supports envoy v3 API, so
         # adding this label to restart pod.
         networking.knative.dev/poke: "v0.26"
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9000"
+        prometheus.io/path: "/stats/prometheus"
     spec:
       containers:
         - args:
@@ -451,7 +470,7 @@ spec:
             - --log-level info
           command:
             - /usr/local/bin/envoy
-          image: docker.io/envoyproxy/envoy:v1.21-latest
+          image: docker.io/envoyproxy/envoy:v1.23-latest
           name: kourier-gateway
           ports:
             - name: http2-external
@@ -497,6 +516,13 @@ spec:
               scheme: HTTP
             initialDelaySeconds: 10
             periodSeconds: 5
+          resources:
+            requests:
+              cpu: 200m
+              memory: 200Mi
+            limits:
+              cpu: 500m
+              memory: 500Mi
       volumes:
         - name: config-volume
           configMap:
@@ -511,7 +537,7 @@ metadata:
   labels:
     networking.knative.dev/ingress-provider: kourier
     app.kubernetes.io/component: net-kourier
-    app.kubernetes.io/version: "20230120-d52387a2"
+    app.kubernetes.io/version: "20230125-f5b81275"
     app.kubernetes.io/name: knative-serving
 spec:
   ports:
@@ -535,7 +561,7 @@ metadata:
   labels:
     networking.knative.dev/ingress-provider: kourier
     app.kubernetes.io/component: net-kourier
-    app.kubernetes.io/version: "20230120-d52387a2"
+    app.kubernetes.io/version: "20230125-f5b81275"
     app.kubernetes.io/name: knative-serving
 spec:
   ports:
